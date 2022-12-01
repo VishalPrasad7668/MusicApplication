@@ -1,0 +1,73 @@
+version: '3.9'
+services:
+  track-service:
+    image: track_image
+    container_name: track-service
+    build: UserTrackService/
+    restart: always
+    networks:
+      - track-network
+    ports:
+      - 8095:8095
+    depends_on:
+      - mongo-service2
+      - springcloud-api-gateway
+      - eureka-service3
+
+  mongo-service2:
+    image: mongo
+    container_name: mongo-service2
+    ports:
+      - 27017:27017
+    networks:
+      - track-network
+
+  authentication-service1:
+    image: authentication_image
+    container_name: authentication-service1
+    build: UserAuthenticationService/
+    restart: always
+    networks:
+      - track-network
+    ports:
+      - 8098:8098
+    depends_on:
+      - mysql-service2
+      - springcloud-api-gateway
+      - eureka-service3
+
+  mysql-service2:
+    image: mysql:latest
+    container_name: mysql-service2
+    networks:
+      - track-network
+    ports:
+      - 3306:3306
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+
+  springcloud-api-gateway:
+    container_name: springcloud-api-gateway
+    build: SpringCloudAPIGateway/
+    networks:
+      - track-network
+    ports:
+      - 9400:9400
+
+
+  eureka-service3:
+    container_name: eureka-service3
+    build: EurekaServer/
+    restart: always
+    networks:
+      - track-network
+    ports:
+      - 8761:8761
+
+networks:
+  track-network:
+    driver: bridge
